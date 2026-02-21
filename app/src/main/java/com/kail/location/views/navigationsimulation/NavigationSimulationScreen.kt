@@ -98,6 +98,19 @@ fun NavigationSimulationScreen(
         pickingType = "none"
     }
 
+    fun pickStart() {
+        pickingType = "start"
+        launcher.launch(Intent(context, LocationPickerActivity::class.java).apply {
+            putExtra(LocationPickerActivity.EXTRA_PICK_MODE, true)
+        })
+    }
+    fun pickEnd() {
+        pickingType = "end"
+        launcher.launch(Intent(context, LocationPickerActivity::class.java).apply {
+            putExtra(LocationPickerActivity.EXTRA_PICK_MODE, true)
+        })
+    }
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     
@@ -184,7 +197,6 @@ fun NavigationSimulationScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { isSearchingStart = true }
                                     .padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -194,17 +206,17 @@ fun NavigationSimulationScreen(
                                     color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.width(60.dp)
                                 )
-                                Text(
-                                    text = if (startPoint.isEmpty()) "请选择起点" else startPoint,
-                                    modifier = Modifier.weight(1f),
-                                    color = if (startPoint.isEmpty()) Color.Gray else Color.Black
-                                )
-                                IconButton(onClick = {
-                                    pickingType = "start"
-                                    launcher.launch(Intent(context, LocationPickerActivity::class.java).apply {
-                                        putExtra(LocationPickerActivity.EXTRA_PICK_MODE, true)
-                                    })
-                                }) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { pickStart() }
+                                ) {
+                                    Text(
+                                        text = if (startPoint.isEmpty()) "请选择起点" else startPoint,
+                                        color = if (startPoint.isEmpty()) Color.Gray else Color.Black
+                                    )
+                                }
+                                IconButton(onClick = { pickStart() }) {
                                     Icon(Icons.Default.Place, contentDescription = "Select on Map", tint = MaterialTheme.colorScheme.primary)
                                 }
                             }
@@ -215,7 +227,6 @@ fun NavigationSimulationScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { isSearchingEnd = true }
                                     .padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -225,17 +236,17 @@ fun NavigationSimulationScreen(
                                     color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.width(60.dp)
                                 )
-                                Text(
-                                    text = if (endPoint.isEmpty()) "请选择终点" else endPoint,
-                                    modifier = Modifier.weight(1f),
-                                    color = if (endPoint.isEmpty()) Color.Gray else Color.Black
-                                )
-                                IconButton(onClick = {
-                                    pickingType = "end"
-                                    launcher.launch(Intent(context, LocationPickerActivity::class.java).apply {
-                                        putExtra(LocationPickerActivity.EXTRA_PICK_MODE, true)
-                                    })
-                                }) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { pickEnd() }
+                                ) {
+                                    Text(
+                                        text = if (endPoint.isEmpty()) "请选择终点" else endPoint,
+                                        color = if (endPoint.isEmpty()) Color.Gray else Color.Black
+                                    )
+                                }
+                                IconButton(onClick = { pickEnd() }) {
                                     Icon(Icons.Default.Place, contentDescription = "Select on Map", tint = MaterialTheme.colorScheme.primary)
                                 }
                             }
@@ -251,15 +262,22 @@ fun NavigationSimulationScreen(
                                     Button(
                                         onClick = { viewModel.startSimulation() },
                                         enabled = !isLoading && startPoint.isNotEmpty() && endPoint.isNotEmpty(),
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primary,
+                                            contentColor = MaterialTheme.colorScheme.onPrimary
+                                        ),
+                                        shape = RoundedCornerShape(24.dp),
                                         modifier = Modifier.weight(1f)
                                     ) {
                                         if (isLoading) {
-                                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(20.dp),
+                                                color = MaterialTheme.colorScheme.onPrimary
+                                            )
                                             Spacer(modifier = Modifier.width(8.dp))
-                                            Text("规划中...")
+                                            Text("规划中...", color = MaterialTheme.colorScheme.onPrimary)
                                         } else {
-                                            Text("开始模拟")
+                                            Text("开始模拟", color = MaterialTheme.colorScheme.onPrimary)
                                         }
                                     }
                                 } else {

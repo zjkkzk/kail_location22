@@ -42,7 +42,7 @@ import com.baidu.mapapi.map.*
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.core.SearchResult
 import com.baidu.mapapi.search.geocode.*
-import com.elvishew.xlog.XLog
+import android.util.Log
 import com.kail.location.repositories.DataBaseHistoryLocation
 import com.kail.location.views.theme.locationTheme
 import com.kail.location.service.ServiceGo
@@ -173,7 +173,7 @@ class LocationPickerActivity : BaseActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         // setContentView(R.layout.activity_main) // Removed for Compose
 
-        XLog.i("MainActivity: onCreate")
+        Log.i("LocationPickerActivity", "MainActivity: onCreate")
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         mOkHttpClient = OkHttpClient()
@@ -185,7 +185,7 @@ class LocationPickerActivity : BaseActivity(), SensorEventListener {
             initMap()
             initMapLocation()
         } catch (e: Throwable) {
-            XLog.e("MainActivity: Error initializing MapView", e)
+            Log.e("LocationPickerActivity", "Error initializing MapView", e)
             Toast.makeText(this, "地图初始化失败: ${e.message}", Toast.LENGTH_LONG).show()
         }
 
@@ -251,11 +251,7 @@ class LocationPickerActivity : BaseActivity(), SensorEventListener {
                          finish()
                     },
                     onToggleMock = {
-                        if (runMode == LocationPickerViewModel.RUN_MODE_ROOT) {
-                            viewModel.toggleMock()
-                        } else {
-                            doGoLocation()
-                        }
+                        doGoLocation()
                     },
                     onZoomIn = { mBaiduMap?.setMapStatus(MapStatusUpdateFactory.zoomIn()) },
                     onZoomOut = { mBaiduMap?.setMapStatus(MapStatusUpdateFactory.zoomOut()) },
@@ -653,11 +649,11 @@ class LocationPickerActivity : BaseActivity(), SensorEventListener {
      * 检查权限与 GPS 状态，启动或停止 ServiceGo 前台服务。
      */
     private fun doGoLocation() {
-        XLog.i("doGoLocation called")
+        Log.i("LocationPickerActivity", "doGoLocation called")
         val runMode = viewModel.runMode.value
         if (runMode != LocationPickerViewModel.RUN_MODE_ROOT) {
             if (!GoUtils.isAllowMockLocation(this)) {
-                XLog.i("Mock location permission NOT granted")
+                Log.i("LocationPickerActivity", "Mock location permission NOT granted")
                 GoUtils.DisplayToast(this, "请在开发者选项中开启模拟位置权限！")
                 return
             }
@@ -665,7 +661,7 @@ class LocationPickerActivity : BaseActivity(), SensorEventListener {
             val lm = getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
             val isGpsEnable = lm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
             if (!isGpsEnable) {
-                XLog.i("GPS NOT enabled")
+                Log.i("LocationPickerActivity", "GPS NOT enabled")
                 GoUtils.DisplayToast(this, "请打开GPS")
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
@@ -674,19 +670,19 @@ class LocationPickerActivity : BaseActivity(), SensorEventListener {
         }
 
         if (isMockServStart) {
-            XLog.i("Stopping Mock Service...")
+            Log.i("LocationPickerActivity", "Stopping Mock Service...")
             val intent = Intent(this, ServiceGo::class.java)
             try {
                 if (mConnection != null) {
                     unbindService(mConnection!!)
                 }
             } catch (e: Exception) {
-                XLog.e("Error unbinding service", e)
+                Log.e("LocationPickerActivity", "Error unbinding service", e)
             }
             stopService(intent)
             isMockServStart = false
         } else {
-            XLog.i("Starting Mock Service...")
+            Log.i("LocationPickerActivity", "Starting Mock Service...")
             val intent = Intent(this, ServiceGo::class.java)
             // 传递坐标信息（保持 BD-09，并指明坐标类型）
             intent.putExtra(LAT_MSG_ID, mMarkLatLngMap.latitude)
@@ -696,7 +692,7 @@ class LocationPickerActivity : BaseActivity(), SensorEventListener {
             // 读取摇杆配置并传递
             val joystickEnabled = sharedPreferences.getBoolean("setting_joystick_enabled", true)
             intent.putExtra(ServiceGo.EXTRA_JOYSTICK_ENABLED, joystickEnabled)
-            XLog.i("Putting extras: lat=${mMarkLatLngMap.latitude}, lng=${mMarkLatLngMap.longitude}, type=BD09, runMode=$runMode, joystick=$joystickEnabled")
+            Log.i("LocationPickerActivity", "Putting extras: lat=${mMarkLatLngMap.latitude}, lng=${mMarkLatLngMap.longitude}, type=BD09, runMode=$runMode, joystick=$joystickEnabled")
 
             // 自动保存历史记录
             recordCurrentLocation(mMarkLatLngMap.longitude, mMarkLatLngMap.latitude)
@@ -722,7 +718,7 @@ class LocationPickerActivity : BaseActivity(), SensorEventListener {
             val hisLocDBHelper = DataBaseHistoryLocation(applicationContext)
             mLocationHistoryDB = hisLocDBHelper.writableDatabase
         } catch (e: Exception) {
-            XLog.e("MainActivity", "ERROR - initLocationDataBase")
+            Log.e("LocationPickerActivity", "ERROR - initLocationDataBase")
         }
     }
 

@@ -54,7 +54,6 @@
         android:name="com.kail.location.utils.GoApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:launchMode="singleInstance"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
@@ -111,7 +110,6 @@
 
         <activity
             android:name="com.kail.location.views.locationpicker.LocationPickerActivity"
-            android:launchMode="singleInstance"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
 

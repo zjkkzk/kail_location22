@@ -20,7 +20,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.baidu.mapapi.model.LatLng
-import com.elvishew.xlog.XLog
+import android.util.Log
 import com.kail.location.views.locationpicker.LocationPickerActivity
 import com.kail.location.R
 import com.kail.location.utils.GoUtils
@@ -123,37 +123,37 @@ class ServiceGo : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        XLog.i("ServiceGo: onCreate started")
+        Log.i("ServiceGo", "ServiceGo: onCreate started")
         
         // 1. Init Notification & Foreground Service
         try {
-            XLog.i("ServiceGo: 1. initNotification")
+            Log.i("ServiceGo", "ServiceGo: 1. initNotification")
             // Must call startForeground immediately
             initNotification()
         } catch (e: Throwable) {
-            XLog.e("ServiceGo: Error in initNotification", e)
+            Log.e("ServiceGo", "ServiceGo: Error in initNotification", e)
             // Continue execution, don't stopSelf yet, maybe we can survive or at least log more
         }
 
         // 2. Init Location Manager & Providers
         try {
-            XLog.i("ServiceGo: 2. init LocationManager")
+            Log.i("ServiceGo", "ServiceGo: 2. init LocationManager")
             mLocManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         } catch (e: Throwable) {
-            XLog.e("ServiceGo: Error in LocationManager init", e)
+            Log.e("ServiceGo", "ServiceGo: Error in LocationManager init", e)
         }
 
         // 3. Init Location Handler
         try {
-            XLog.i("ServiceGo: 3. initGoLocation")
+            Log.i("ServiceGo", "ServiceGo: 3. initGoLocation")
             initGoLocation()
         } catch (e: Throwable) {
-            XLog.e("ServiceGo: Error in initGoLocation", e)
+            Log.e("ServiceGo", "ServiceGo: Error in initGoLocation", e)
         }
             
         // 4. Init JoyStick
         try {
-            XLog.i("ServiceGo: 4. initJoyStick")
+            Log.i("ServiceGo", "ServiceGo: 4. initJoyStick")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 GoUtils.DisplayToast(applicationContext, "请授予悬浮窗权限")
             }
@@ -168,12 +168,12 @@ class ServiceGo : Service() {
                 mJoyStick.hide()
             }
         } catch (e: Throwable) {
-            XLog.e("ServiceGo: Error initializing JoyStick", e)
+            Log.e("ServiceGo", "ServiceGo: Error initializing JoyStick", e)
             GoUtils.DisplayToast(applicationContext, "悬浮窗初始化失败: ${e.message}")
         }
 
         broadcastStatus()
-        XLog.i("ServiceGo: onCreate finished")
+        Log.i("ServiceGo", "ServiceGo: onCreate finished")
     }
 
     /**
@@ -201,9 +201,9 @@ class ServiceGo : Service() {
                                 mJoyStick.setRoutePauseState(true)
                             }
                             broadcastStatus()
-                            XLog.i("ServiceGo: paused simulation loop")
+                            Log.i("ServiceGo", "ServiceGo: paused simulation loop")
                         } catch (e: Exception) {
-                            XLog.e("ServiceGo: pause error", e)
+                            Log.e("ServiceGo", "ServiceGo: pause error", e)
                         }
                         return super.onStartCommand(intent, flags, startId)
                     }
@@ -214,9 +214,9 @@ class ServiceGo : Service() {
                                 mJoyStick.setRoutePauseState(false)
                             }
                             broadcastStatus()
-                            XLog.i("ServiceGo: resumed simulation loop")
+                            Log.i("ServiceGo", "ServiceGo: resumed simulation loop")
                         } catch (e: Exception) {
-                            XLog.e("ServiceGo: resume error", e)
+                            Log.e("ServiceGo", "ServiceGo: resume error", e)
                         }
                         return super.onStartCommand(intent, flags, startId)
                     }
@@ -224,9 +224,9 @@ class ServiceGo : Service() {
                         try {
                             stopSelf()
                             broadcastStatus() // Technically stopSelf calls onDestroy, but explicit broadcast helps
-                            XLog.i("ServiceGo: stopSelf via control action")
+                            Log.i("ServiceGo", "ServiceGo: stopSelf via control action")
                         } catch (e: Exception) {
-                            XLog.e("ServiceGo: stop error", e)
+                            Log.e("ServiceGo", "ServiceGo: stop error", e)
                         }
                         return super.onStartCommand(intent, flags, startId)
                     }
@@ -264,10 +264,10 @@ class ServiceGo : Service() {
                                 mCurLat = a.second + dLatDeg * f
                                 mCurBea = bearingDegrees(a.first, a.second, b.first, b.second)
                                 updateJoystickStatus()
-                                XLog.i("ServiceGo: seek to ratio=$ratio index=$mRouteIndex progress=$mSegmentProgressMeters")
+                                Log.i("ServiceGo", "ServiceGo: seek to ratio=$ratio index=$mRouteIndex progress=$mSegmentProgressMeters")
                             }
                         } catch (e: Exception) {
-                            XLog.e("ServiceGo: seek error", e)
+                            Log.e("ServiceGo", "ServiceGo: seek error", e)
                         }
                         return super.onStartCommand(intent, flags, startId)
                     }
@@ -287,7 +287,7 @@ class ServiceGo : Service() {
             try {
                 initNotification()
             } catch (e: Exception) {
-                XLog.e("ServiceGo: Error in onStartCommand initNotification", e)
+                Log.e("ServiceGo", "ServiceGo: Error in onStartCommand initNotification", e)
             }
         }
 
@@ -340,7 +340,7 @@ class ServiceGo : Service() {
                 calculateRouteDistances()
             }
             
-            XLog.i("ServiceGo: onStartCommand received lat=$mCurLat, lng=$mCurLng, runMode=$mRunMode")
+            Log.i("ServiceGo", "ServiceGo: onStartCommand received lat=$mCurLat, lng=$mCurLng, runMode=$mRunMode")
 
             if (mRunMode != "root") {
                 ensureNorootProviders()
@@ -369,7 +369,7 @@ class ServiceGo : Service() {
                         mJoyStick.hide()
                     }
                 } catch (e: Exception) {
-                    XLog.e("ServiceGo: Error setting current position or showing joystick", e)
+                    Log.e("ServiceGo", "ServiceGo: Error setting current position or showing joystick", e)
                 }
             }
         }
@@ -382,7 +382,7 @@ class ServiceGo : Service() {
      * 清理资源、广播接收器并停止前台服务。
      */
     override fun onDestroy() {
-        XLog.i("ServiceGo: onDestroy started")
+        Log.i("ServiceGo", "ServiceGo: onDestroy started")
         try {
             val intent = Intent(ACTION_STATUS_CHANGED)
             intent.putExtra(EXTRA_IS_SIMULATING, false)
@@ -419,11 +419,11 @@ class ServiceGo : Service() {
                 stopForeground(true)
             }
         } catch (e: Exception) {
-            XLog.e("ServiceGo: Error in onDestroy", e)
+            Log.e("ServiceGo", "ServiceGo: Error in onDestroy", e)
         }
 
         super.onDestroy()
-        XLog.i("ServiceGo: onDestroy finished")
+        Log.i("ServiceGo", "ServiceGo: onDestroy finished")
     }
 
     /**
@@ -567,10 +567,10 @@ class ServiceGo : Service() {
                         sendEmptyMessage(HANDLER_MSG_ID)
                     }
                 } catch (e: InterruptedException) {
-                    XLog.e("SERVICEGO: ERROR - handleMessage interrupted")
+                    Log.e("ServiceGo", "SERVICEGO: ERROR - handleMessage interrupted")
                     Thread.currentThread().interrupt()
                 } catch (e: Exception) {
-                    XLog.e("SERVICEGO: ERROR - handleMessage exception", e)
+                    Log.e("ServiceGo", "SERVICEGO: ERROR - handleMessage exception", e)
                     // 防止死循环崩溃，稍微延迟后再发送消息
                     if (!isStop) {
                          sendEmptyMessageDelayed(HANDLER_MSG_ID, 1000)
@@ -595,29 +595,29 @@ class ServiceGo : Service() {
             removeTestProviderGPS()
             addTestProviderGPS()
         } catch (e: Throwable) {
-            XLog.e("ServiceGo: Error ensuring providers", e)
+            Log.e("ServiceGo", "ServiceGo: Error ensuring providers", e)
         }
     }
 
     private fun portalInitIfNeeded(): Boolean {
         if (portalRandomKey != null) return true
         val rely = Bundle()
-        XLog.i("ServiceGo: sending exchange_key...")
+        Log.i("ServiceGo", "ServiceGo: sending exchange_key...")
         val ok = kotlin.runCatching {
             mLocManager.sendExtraCommand(PORTAL_PROVIDER, "exchange_key", rely)
         }.onFailure {
-            XLog.e("ServiceGo: sendExtraCommand exception", it)
+            Log.e("ServiceGo", "ServiceGo: sendExtraCommand exception", it)
         }.getOrDefault(false)
         if (!ok) {
-            XLog.e("ServiceGo: exchange_key failed (sendExtraCommand returned false)")
+            Log.e("ServiceGo", "ServiceGo: exchange_key failed (sendExtraCommand returned false)")
             return false
         }
         val key = rely.getString("key")
         if (key.isNullOrBlank()) {
-            XLog.e("ServiceGo: exchange_key failed (key is null/blank)")
+            Log.e("ServiceGo", "ServiceGo: exchange_key failed (key is null/blank)")
             return false
         }
-        XLog.i("ServiceGo: exchange_key success, key=$key")
+        Log.i("ServiceGo", "ServiceGo: exchange_key success, key=$key")
         portalRandomKey = key
         return true
     }
@@ -630,14 +630,14 @@ class ServiceGo : Service() {
         return kotlin.runCatching {
             mLocManager.sendExtraCommand(PORTAL_PROVIDER, key, rely)
         }.onFailure {
-             XLog.e("ServiceGo: portalSend exception command=$commandId", it)
+             Log.e("ServiceGo", "ServiceGo: portalSend exception command=$commandId", it)
         }.getOrDefault(false)
     }
 
     private fun portalStartIfNeeded(): Boolean {
         if (portalStarted) return true
         if (!portalInitIfNeeded()) {
-            XLog.e("ServiceGo: portalStartIfNeeded failed because init failed")
+            Log.e("ServiceGo", "ServiceGo: portalStartIfNeeded failed because init failed")
             return false
         }
         val ok = portalSend("start") {
@@ -646,17 +646,17 @@ class ServiceGo : Service() {
             putFloat("accuracy", 1.0f)
         }
         if (ok) {
-            XLog.i("ServiceGo: portal start command success")
+            Log.i("ServiceGo", "ServiceGo: portal start command success")
             portalStarted = true
         } else {
-            XLog.e("ServiceGo: portal start command failed")
+            Log.e("ServiceGo", "ServiceGo: portal start command failed")
         }
         return ok
     }
 
     private fun portalUpdateOnce() {
         if (!portalStartIfNeeded()) {
-            XLog.e("ServiceGo: portalUpdateOnce failed because start failed")
+            Log.e("ServiceGo", "ServiceGo: portalUpdateOnce failed because start failed")
             return
         }
         portalSend("set_altitude") { putDouble("altitude", mCurAlt) }
@@ -815,7 +815,7 @@ class ServiceGo : Service() {
                 mLocManager.removeTestProvider(LocationManager.GPS_PROVIDER)
             }
         } catch (e: Exception) {
-            XLog.e("SERVICEGO: ERROR - removeTestProviderGPS")
+            Log.e("ServiceGo", "SERVICEGO: ERROR - removeTestProviderGPS")
         }
     }
 
@@ -843,7 +843,7 @@ class ServiceGo : Service() {
                 mLocManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true)
             }
         } catch (e: Exception) {
-            XLog.e("SERVICEGO: ERROR - addTestProviderGPS")
+            Log.e("ServiceGo", "SERVICEGO: ERROR - addTestProviderGPS")
         }
     }
 
@@ -875,7 +875,7 @@ class ServiceGo : Service() {
 
             mLocManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, loc)
         } catch (e: Exception) {
-            XLog.e("SERVICEGO: ERROR - setLocationGPS", e)
+            Log.e("ServiceGo", "SERVICEGO: ERROR - setLocationGPS", e)
         }
     }
 
@@ -889,7 +889,7 @@ class ServiceGo : Service() {
                 mLocManager.removeTestProvider(LocationManager.NETWORK_PROVIDER)
             }
         } catch (e: Exception) {
-            XLog.e("SERVICEGO: ERROR - removeTestProviderNetwork")
+            Log.e("ServiceGo", "SERVICEGO: ERROR - removeTestProviderNetwork")
         }
     }
 
@@ -922,7 +922,7 @@ class ServiceGo : Service() {
                 mLocManager.setTestProviderEnabled(LocationManager.NETWORK_PROVIDER, true)
             }
         } catch (e: SecurityException) {
-            XLog.e("SERVICEGO: ERROR - addTestProviderNetwork")
+            Log.e("ServiceGo", "SERVICEGO: ERROR - addTestProviderNetwork")
         }
     }
 
@@ -954,7 +954,7 @@ class ServiceGo : Service() {
 
             mLocManager.setTestProviderLocation(LocationManager.NETWORK_PROVIDER, loc)
         } catch (e: Exception) {
-            XLog.e("SERVICEGO: ERROR - setLocationNetwork", e)
+            Log.e("ServiceGo", "SERVICEGO: ERROR - setLocationNetwork", e)
         }
     }
 

@@ -58,7 +58,7 @@ class RouteSimulationActivity : BaseActivity(), SensorEventListener {
         mBaiduMap = mMapView?.map
         mBaiduMap?.isMyLocationEnabled = true
         initMapLocation()
-        com.elvishew.xlog.XLog.i("RouteSimulationActivity: Map and location initialized")
+        android.util.Log.i("RouteSimulationActivity", "Map and location initialized")
         
         var version = "v1.0.0"
         try {
@@ -163,9 +163,9 @@ class RouteSimulationActivity : BaseActivity(), SensorEventListener {
                                 if (!invalid) {
                                     val ll = LatLng(lat, lon)
                                     mBaiduMap?.animateMapStatus(com.baidu.mapapi.map.MapStatusUpdateFactory.newLatLng(ll))
-                                    com.elvishew.xlog.XLog.i("RouteSimulationActivity: Animate to current $ll")
+                                    android.util.Log.i("RouteSimulationActivity", "Animate to current $ll")
                                 } else {
-                                    com.elvishew.xlog.XLog.w("RouteSimulationActivity: Current location unavailable")
+                                    android.util.Log.w("RouteSimulationActivity", "Current location unavailable")
                                 }
                             },
                             currentLatLng = run {

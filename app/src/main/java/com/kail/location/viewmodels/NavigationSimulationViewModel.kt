@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import android.content.Intent
 import androidx.core.content.ContextCompat
-import com.elvishew.xlog.XLog
+import android.util.Log
 import com.kail.location.models.UpdateInfo
 import com.kail.location.utils.UpdateChecker
 import android.content.Context
@@ -217,7 +217,7 @@ class NavigationSimulationViewModel(application: Application) : AndroidViewModel
             override fun onGetDrivingRouteResult(result: DrivingRouteResult?) {
                 _isLoading.value = false
                 if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {
-                    XLog.e("Route plan failed: ${result?.error}")
+                    Log.e("NavSimVM", "Route plan failed: ${result?.error}")
                     return
                 }
                 if (result.routeLines.isNotEmpty()) {

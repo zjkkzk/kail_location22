@@ -26,6 +26,9 @@ fun AppDrawer(
     scope: kotlinx.coroutines.CoroutineScope = rememberCoroutineScope()
 ) {
     var showRunModeDialog by remember { mutableStateOf(false) }
+    var showEnvDialog by remember { mutableStateOf(false) }
+    var envMessage by remember { mutableStateOf("") }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     if (showRunModeDialog) {
         AlertDialog(
@@ -38,8 +41,15 @@ fun AppDrawer(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                onRunModeChange("root")
-                                showRunModeDialog = false
+                                val hasRoot = com.kail.location.utils.GoUtils.isRootAvailable()
+                                if (hasRoot) {
+                                    onRunModeChange("root")
+                                    showRunModeDialog = false
+                                } else {
+                                    envMessage = "Root: ${if (hasRoot) "已检测" else "未检测"}\n请获取 Root 权限后再切换。"
+                                    showRunModeDialog = false
+                                    showEnvDialog = true
+                                }
                             }
                             .padding(16.dp)
                     ) {
@@ -72,6 +82,19 @@ fun AppDrawer(
             confirmButton = {
                 TextButton(onClick = { showRunModeDialog = false }) {
                     Text(stringResource(android.R.string.cancel))
+                }
+            }
+        )
+    }
+    
+    if (showEnvDialog) {
+        AlertDialog(
+            onDismissRequest = { showEnvDialog = false },
+            title = { Text("环境检测") },
+            text = { Text(envMessage) },
+            confirmButton = {
+                TextButton(onClick = { showEnvDialog = false }) {
+                    Text("确定")
                 }
             }
         )
@@ -141,12 +164,6 @@ fun AppDrawer(
             icon = { Icon(painterResource(R.drawable.ic_menu_upgrade), contentDescription = null) },
             selected = false,
             onClick = { scope.launch { drawerState.close(); onNavigate(R.id.nav_update) } }
-        )
-        NavigationDrawerItem(
-            label = { Text(stringResource(R.string.nav_menu_feedback)) },
-            icon = { Icon(painterResource(R.drawable.ic_menu_feedback), contentDescription = null) },
-            selected = false,
-            onClick = { scope.launch { drawerState.close(); onNavigate(R.id.nav_feedback) } }
         )
         NavigationDrawerItem(
             label = { Text(stringResource(R.string.nav_menu_contact)) },

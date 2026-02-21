@@ -14,6 +14,7 @@ import android.widget.Toast
 import kotlinx.coroutines.flow.update
 import com.kail.location.models.HistoryRecord
 import com.kail.location.repositories.DataBaseHistoryLocation
+import com.kail.location.utils.MapUtils
 import androidx.preference.PreferenceManager
 import android.database.sqlite.SQLiteDatabase
 import kotlinx.coroutines.Dispatchers
@@ -99,6 +100,20 @@ class LocationSimulationViewModel(application: Application) : AndroidViewModel(a
         val next = !_isSimulating.value
         if (next) {
             val info = locationInfo.value
+            try {
+                val wgs84 = MapUtils.bd2wgs(info.longitude, info.latitude)
+                db?.let {
+                    DataBaseHistoryLocation.addHistoryLocation(
+                        it,
+                        info.name,
+                        wgs84[0].toString(),
+                        wgs84[1].toString(),
+                        (System.currentTimeMillis() / 1000).toString(),
+                        info.longitude.toString(),
+                        info.latitude.toString()
+                    )
+                }
+            } catch (_: Exception) {}
             val intent = Intent(app, ServiceGo::class.java)
             intent.putExtra(LocationPickerActivity.LNG_MSG_ID, info.longitude)
             intent.putExtra(LocationPickerActivity.LAT_MSG_ID, info.latitude)

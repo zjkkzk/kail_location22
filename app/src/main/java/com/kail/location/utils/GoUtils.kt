@@ -198,6 +198,23 @@ object GoUtils {
         return false
     }
 
+    @JvmStatic
+    fun isRootAvailable(): Boolean {
+        return kotlin.runCatching {
+            Runtime.getRuntime().exec(arrayOf("su", "-c", "echo ok")).waitFor() == 0
+        }.getOrDefault(false)
+    }
+
+    @JvmStatic
+    fun isXposedActive(context: Context): Boolean {
+        return kotlin.runCatching {
+            val f = java.io.File(context.filesDir, "kail_location_xposed.log")
+            if (!f.exists()) return@runCatching false
+            val s = f.readText()
+            s.contains("hook ready") || s.isNotBlank()
+        }.getOrDefault(false)
+    }
+
     /**
      * 获取应用版本名（字符串）。
      *

@@ -22,7 +22,6 @@ import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.core.PoiInfo
 import com.baidu.mapapi.search.sug.SuggestionSearch
 import com.baidu.mapapi.search.sug.SuggestionSearchOption
-import com.elvishew.xlog.XLog
 import com.kail.location.repositories.DataBaseHistoryLocation
 import com.kail.location.views.history.HistoryActivity
 import com.kail.location.views.locationpicker.LocationPickerActivity
@@ -148,7 +147,7 @@ class JoyStick @JvmOverloads constructor(
             try {
                 initJoyStickMapView()
             } catch (e: Throwable) {
-                XLog.e("JoyStick: Error initializing MapView", e)
+                Log.e("JoyStick", "Error initializing MapView", e)
             }
             initHistoryView()
             initRouteControlView()
@@ -209,7 +208,7 @@ class JoyStick @JvmOverloads constructor(
                 }
             }
         } catch (e: Exception) {
-            XLog.e("JoyStick: Error in show()", e)
+            Log.e("JoyStick", "Error in show()", e)
         }
     }
 
@@ -275,7 +274,7 @@ class JoyStick @JvmOverloads constructor(
                 mRouteMapView.onDestroy()
             }
         } catch (e: Exception) {
-            XLog.e("JoyStick: Error in destroy()", e)
+            Log.e("JoyStick", "Error in destroy()", e)
         }
     }
 
@@ -572,7 +571,7 @@ class JoyStick @JvmOverloads constructor(
      */
     private fun resetBaiduMap() {
         if (!this::mBaiduMap.isInitialized) {
-            XLog.e("JoyStick: mBaiduMap not initialized in resetBaiduMap")
+            Log.e("JoyStick", "mBaiduMap not initialized in resetBaiduMap")
             return
         }
         try {
@@ -588,7 +587,7 @@ class JoyStick @JvmOverloads constructor(
             builder.target(mCurMapLngLat).zoom(18.0f)
             mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()))
         } catch (e: Exception) {
-            XLog.e("JoyStick: Error in resetBaiduMap", e)
+            Log.e("JoyStick", "Error in resetBaiduMap", e)
         }
     }
 
@@ -599,7 +598,7 @@ class JoyStick @JvmOverloads constructor(
      */
     private fun markBaiduMap(latLng: LatLng) {
         if (!this::mBaiduMap.isInitialized) {
-            XLog.e("JoyStick: mBaiduMap not initialized in markBaiduMap")
+            Log.e("JoyStick", "mBaiduMap not initialized in markBaiduMap")
             return
         }
         try {
@@ -613,7 +612,7 @@ class JoyStick @JvmOverloads constructor(
             builder.target(latLng).zoom(18.0f)
             mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()))
         } catch (e: Exception) {
-             XLog.e("JoyStick: Error in markBaiduMap", e)
+             Log.e("JoyStick", "Error in markBaiduMap", e)
         }
     }
 

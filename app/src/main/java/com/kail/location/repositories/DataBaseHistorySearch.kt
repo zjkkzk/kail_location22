@@ -4,7 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import com.elvishew.xlog.XLog
+import android.util.Log
 
 /**
  * 历史搜索数据的 SQLite 辅助类。
@@ -74,7 +74,7 @@ class DataBaseHistorySearch(context: Context) : SQLiteOpenHelper(context, DB_NAM
                 sqLiteDatabase.delete(TABLE_NAME, "$DB_COLUMN_KEY = ?", arrayOf(searchKey))
                 sqLiteDatabase.insert(TABLE_NAME, null, contentValues)
             } catch (e: Exception) {
-                XLog.e("DATABASE: insert error")
+                Log.e("DataBaseHistorySearch", "DATABASE: insert error", e)
             }
         }
 

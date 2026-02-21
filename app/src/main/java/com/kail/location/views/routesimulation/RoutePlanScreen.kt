@@ -28,7 +28,7 @@ import com.baidu.mapapi.map.PolylineOptions
 import com.baidu.mapapi.map.MapStatusUpdateFactory
 import com.baidu.mapapi.map.MapStatus
 import com.baidu.mapapi.map.Overlay
-import com.elvishew.xlog.XLog
+import android.util.Log
 import android.graphics.Color as AndroidColor
 import androidx.preference.PreferenceManager
 import com.kail.location.utils.MapUtils
@@ -128,7 +128,7 @@ fun RoutePlanScreen(
                         com.baidu.mapapi.map.BitmapDescriptorFactory.fromResource(R.drawable.ic_position)
                     )
                 )
-                XLog.i("RoutePlanScreen: Map initialized")
+                Log.i("RoutePlanScreen", "Map initialized")
                 
                 map.setOnMapStatusChangeListener(object : BaiduMap.OnMapStatusChangeListener {
                     override fun onMapStatusChangeStart(status: MapStatus) {
@@ -192,14 +192,19 @@ fun RoutePlanScreen(
                         
                         endPoint = "${target.latitude},${target.longitude}"
                         currentAnchor = target
-                        XLog.i("RoutePlanScreen: Finalize waypoint ${waypoints.size} -> $target")
+                        try {
+                            mapView?.map?.setMapStatus(MapStatusUpdateFactory.newMapStatus(MapStatus.Builder().target(target).zoom(15f).build()))
+                            Log.i("RoutePlanScreen", "Finalize waypoint ${waypoints.size} -> $target")
+                        } catch (e: Exception) {
+                            Log.e("RoutePlanScreen", "Map init error", e)
+                        }
                     }
                 })
             } else {
-                XLog.e("RoutePlanScreen: MapView.map is null")
+                Log.e("RoutePlanScreen", "MapView.map is null")
             }
         } catch (e: Exception) {
-            XLog.e("RoutePlanScreen: Map init error", e)
+            Log.e("RoutePlanScreen", "Map init error", e)
         }
     }
 
@@ -210,7 +215,7 @@ fun RoutePlanScreen(
                 val ll = currentLatLng
                 if (!hasCentered && ll != null && !(ll.latitude == 0.0 && ll.longitude == 0.0)) {
                     map.animateMapStatus(MapStatusUpdateFactory.newLatLng(ll))
-                    XLog.i("RoutePlanScreen: Center to current $ll")
+                    Log.i("RoutePlanScreen", "Center to current $ll")
                     hasCentered = true
                 }
                 
@@ -229,7 +234,7 @@ fun RoutePlanScreen(
                 }
             }
         } catch (e: Exception) {
-            XLog.e("RoutePlanScreen: Map center/marker error", e)
+            Log.e("RoutePlanScreen", "Map center/marker error", e)
         }
     }
 
@@ -491,9 +496,9 @@ fun RoutePlanScreen(
                                     currentAnchor = null
                                 }
                             }
-                            XLog.i("RoutePlanScreen: Undo last waypoint, now size=${waypoints.size}")
+                            Log.i("RoutePlanScreen", "Undo last waypoint, now size=${waypoints.size}")
                         } catch (e: Exception) {
-                            XLog.e("RoutePlanScreen: Undo error", e)
+                            Log.e("RoutePlanScreen", "Undo error", e)
                         }
                     },
                     modifier = Modifier.alpha(if (waypoints.isNotEmpty()) 1f else 0f),
@@ -527,9 +532,9 @@ fun RoutePlanScreen(
                                         markingPhase = MarkingPhase.Idle
                                     }
                                 }
-                                XLog.i("RoutePlanScreen: Marking phase ${markingPhase}")
+                                Log.i("RoutePlanScreen", "Marking phase ${markingPhase}")
                             } catch (e: Exception) {
-                                XLog.e("RoutePlanScreen: Toggle mark mode error", e)
+                                Log.e("RoutePlanScreen", "Toggle mark mode error", e)
                             }
                         },
                         containerColor = Color.White,
@@ -542,11 +547,11 @@ fun RoutePlanScreen(
                             try {
                                 if (waypoints.size >= 2) {
                                     viewModel.saveRoute(waypoints.toList())
-                                    XLog.i("RoutePlanScreen: Saved route with ${waypoints.size} points via ViewModel")
+                                    Log.i("RoutePlanScreen", "Saved route with ${waypoints.size} points via ViewModel")
                                 }
                                 onConfirmClick()
                             } catch (e: Exception) {
-                                XLog.e("RoutePlanScreen: Save route error", e)
+                                Log.e("RoutePlanScreen", "Save route error", e)
                             }
                         },
                         containerColor = MaterialTheme.colorScheme.secondary
