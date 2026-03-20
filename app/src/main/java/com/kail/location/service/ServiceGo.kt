@@ -744,8 +744,20 @@ class ServiceGo : Service() {
             mLocManager.sendExtraCommand(PORTAL_PROVIDER, key, rely)
         }.onFailure {
              KailLog.e(this, "ServiceGo", "portalSend exception command=$commandId: ${it.message}")
+             // If we get an exception, something is wrong with the connection, reset key
+             portalRandomKey = null
+             portalStarted = false
         }.getOrDefault(false)
-        KailLog.i(this, "ServiceGo", "PORTAL结果：cmd=$commandId，ok=$ok",isHighFrequency = true)
+        
+        if (!ok) {
+            KailLog.e(this, "ServiceGo", "PORTAL结果失败：cmd=$commandId，可能密钥失效",isHighFrequency = true)
+            // If the command failed, maybe the key is invalid (system_server restarted)
+            // We should reset and try to re-init next time
+            portalRandomKey = null
+            portalStarted = false
+        } else {
+            KailLog.i(this, "ServiceGo", "PORTAL结果成功：cmd=$commandId",isHighFrequency = true)
+        }
         return ok
     }
 
