@@ -18,12 +18,12 @@
 #define SENSOR_TYPE_STEP_COUNTER 19
 #define SENSOR_TYPE_STEP_DETECTOR 18
 
-typedef uint64_t (*PollFunc)(void*, void*, uint64_t);
+typedef void (*PollFunc)(void*, void*, uint64_t);
 
 static PollFunc original_poll = nullptr;
 static bool hook_installed = false;
 
-extern "C" uint64_t hooked_poll(void* device, void* buffer, uint64_t count);
+extern "C" void hooked_poll(void* device, void* buffer, uint64_t count);
 
 static void* get_lib_base() {
     FILE* fp = fopen("/proc/self/maps", "r");
@@ -53,11 +53,11 @@ static void install_poll_hook() {
         return;
     }
     
-    // Offset for pollFmq function entry point
-    static constexpr uint32_t kPollOffset = 0x125c94;
+    // Offset for HidlSensorHalWrapper::poll function entry point
+    static constexpr uint32_t kPollOffset = 0x12da3c;
     void* target = reinterpret_cast<char*>(base) + kPollOffset;
     
-    ALOGI("Installing pollFmq hook: base=%p target=%p offset=0x%x", base, target, kPollOffset);
+    ALOGI("Installing HIDL poll hook: base=%p target=%p offset=0x%x", base, target, kPollOffset);
     
     int ret = DobbyHook(
         target,
@@ -99,26 +99,56 @@ static void process_sensor_events(void* buffer, int count) {
           type, sensor, timestamp, data[0], data[1], data[2]);
 }
 
-extern "C" uint64_t hooked_poll(void* device, void* buffer, uint64_t count) {
-    // Safety check
-    if (!buffer || count == 0) {
-        if (original_poll) {
-            return original_poll(device, buffer, count);
-        }
-        return 0;
-    }
-    
-    uint64_t result = 0;
-    
+extern "C" int hooked_poll(void* device, void* buffer, uint64_t count) {
+
+    // 先调用原函数，拿到真实返回值
+    int ret = 0;
     if (original_poll) {
-        result = original_poll(device, buffer, count);
+        ret = original_poll(device, buffer, count);
     }
-    
-    if (result > 0 && buffer) {
-        process_sensor_events(buffer, (int)result);
+
+    if (!buffer || ret <= 0 || ret > 64) return ret;
+
+    ALOGI("=== poll return count = %d ===", ret);
+
+    char* base = reinterpret_cast<char*>(buffer);
+
+    for (int i = 0; i < ret; i++) {
+
+        char* evt = base + i * 0x60;
+
+        int version = *(int*)(evt + 0x00);
+        int sensor  = *(int*)(evt + 0x04);
+        int type    = *(int*)(evt + 0x08);
+        int64_t ts  = *(int64_t*)(evt + 0x10);
+
+        float* data = (float*)(evt + 0x18);
+
+        // 过滤无效
+        if (type <= 0 || type > 50) continue;
+
+        ALOGI("[#%d] type=%d sensor=%d ver=%d ts=%lld",
+              i, type, sensor, version, ts);
+
+        ALOGI("     data = %.6f %.6f %.6f",
+              data[0], data[1], data[2]);
+
+        // 👉 如果是加速度
+        if (type == 1) {
+            ALOGI("     ==> ACCELEROMETER");
+        }
+
+        // 👉 如果是步数
+        if (type == SENSOR_TYPE_STEP_COUNTER) {
+            ALOGI("     ==> STEP_COUNTER = %.0f", data[0]);
+        }
+
+        if (type == SENSOR_TYPE_STEP_DETECTOR) {
+            ALOGI("     ==> STEP_DETECTOR");
+        }
     }
-    
-    return result;
+
+    return ret;
 }
 
 extern "C" {
